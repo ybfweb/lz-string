@@ -26,18 +26,12 @@ export default defineConfig({
       resolvers: [NaiveUiResolver(), DevUiResolver()]
     }),
     monacoEditorPlugin({
-      languageWorkers: ['editorWorkerService', 'json']
+      languageWorkers: ['editorWorkerService', 'json'],
+      customWorkers: [{ label: 'json', entry: 'monaco-editor/esm/vs/language/json/json.worker.js' }]
     })
   ],
   define: {
     'process.env': {},
-    'process.argv': [],
-    'process': {
-      env: {},
-      argv: [],
-      cwd: () => '/',
-      platform: 'browser'
-    }
   },
   resolve: {
       alias: {
@@ -46,6 +40,7 @@ export default defineConfig({
       }
     },
   worker: {
-      format: 'es'
+      format: 'es',
+      plugins: [vue()]
     }
 })
