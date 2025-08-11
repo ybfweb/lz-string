@@ -2,6 +2,7 @@
 import { ref, watchEffect, onMounted, onUnmounted } from 'vue';
 import type { Ref } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
+import Sidebar from './components/Sidebar.vue';
 import { decompressFromEncodedURIComponent, compressToEncodedURIComponent } from 'lz-string';
 ;
 
@@ -227,8 +228,10 @@ const compareText = () => {
 </script>
 
 <template>
-  <div class="container">
-    <div class="section">
+  <div class="app-container">
+    <Sidebar />
+    <div class="container">
+      <div id="lz-decode" class="section">
       <h2 class="section-title">LZ-String 解码</h2>
       <div class="input-group">
         <n-input 
@@ -251,7 +254,7 @@ const compareText = () => {
       </div>
     </div>
     
-    <div class="section">
+    <div id="lz-encode" class="section">
       <h2 class="section-title">LZ-String 编码</h2>
       <div class="input-group">
         <n-input 
@@ -273,7 +276,7 @@ const compareText = () => {
     </div>
 
     <!-- 文本对比 -->
-    <div class="section">
+    <div id="text-compare" class="section">
       <h2 class="section-title">文本对比</h2>
       <div class="compare-container">
         <div class="compare-column">
@@ -333,7 +336,7 @@ const compareText = () => {
     </div>
 
     <!-- 图片Base64互转 -->
-    <div class="section">
+    <div id="image-base64" class="section">
       <h2 class="section-title">图片Base64互转</h2>
       <div class="image-converter-container">
         <div class="image-input-section">
@@ -381,7 +384,7 @@ const compareText = () => {
     </div>
 
     <!-- URL编解码 -->
-    <div class="section">
+    <div id="url-encode-decode" class="section">
       <h2 class="section-title">URL编解码</h2>
       <div class="url-converter-container">
         <div class="url-input-section">
@@ -431,17 +434,31 @@ const compareText = () => {
       </div>
     </div>
   </div>
+  </div>
 </template>
 
 <style scoped lang="less">
-.container {
-  max-width: 1200px;
+.app-container {
+  max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
   display: flex;
-  flex-direction: column;
   gap: 2rem;
   box-sizing: border-box;
+}
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* 响应式调整 */
+@media (max-width: 992px) {
+  .app-container {
+    flex-direction: column;
+  }
 }
 
 /* 添加响应式布局支持 */
