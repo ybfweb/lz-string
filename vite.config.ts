@@ -25,9 +25,23 @@ export default defineConfig({
       resolvers: [NaiveUiResolver(), DevUiResolver()]
     })
   ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+  define: {
+    'process.env': {},
+    'process.argv': [],
+    'process': {
+      env: {},
+      argv: [],
+      cwd: () => '/',
+      platform: 'browser'
     }
-  }
+  },
+  resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+        'monaco-editor': fileURLToPath(new URL('./node_modules/monaco-editor', import.meta.url))
+      }
+    },
+  worker: {
+      format: 'es'
+    }
 })
