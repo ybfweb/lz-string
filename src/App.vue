@@ -1,215 +1,215 @@
 <script setup lang="ts">
-import { ref, watchEffect, onMounted, onUnmounted } from 'vue';
+import { ref, watchEffect, onMounted, onUnmounted } from 'vue'
 import type { Ref } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
-import Sidebar from './components/Sidebar.vue';
-import { decompressFromEncodedURIComponent, compressToEncodedURIComponent } from 'lz-string';
-;
-
-const str = ref('');
+import Sidebar from './components/Sidebar.vue'
+import { decompressFromEncodedURIComponent, compressToEncodedURIComponent } from 'lz-string'
+const str = ref('')
 // 为codeEditorRef添加类型注释
-const codeEditorRef: Ref<{ editor: { layout: () => void } } | null> = ref(null);
+const codeEditorRef: Ref<{ editor: { layout: () => void } } | null> = ref(null)
 
 // 窗口大小变化处理
 const handleResize = () => {
   if (codeEditorRef.value) {
     // 调用 Monaco Editor 的 layout 方法重新计算布局
-    codeEditorRef.value.editor.layout();
+    codeEditorRef.value.editor.layout()
   }
-};
+}
 
 // 组件挂载时添加事件监听
 onMounted(() => {
-  window.addEventListener('resize', handleResize);
-});
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载时移除事件监听
 onUnmounted(() => {
-  window.removeEventListener('resize', handleResize);
-});
-const jsonObj = ref('');
-const jsonStr = ref('');
-const lzStr = ref('');
-const textCompareLeft = ref('');
-const textCompareRight = ref('');
-const textDiffResult = ref('');
+  window.removeEventListener('resize', handleResize)
+})
+const jsonObj = ref('')
+const jsonStr = ref('')
+const lzStr = ref('')
+const textCompareLeft = ref('')
+const textCompareRight = ref('')
+const textDiffResult = ref('')
 // 图片Base64互转相关变量
-const imageFile = ref<File | null>(null);
-const imageBase64 = ref('');
-const imagePreviewUrl = ref('');
+const imageFile = ref<File | null>(null)
+const imageBase64 = ref('')
+const imagePreviewUrl = ref('')
 
 // URL编解码相关变量
-const url = ref('');
-const encodedUrl = ref('');
-const decodedUrl = ref('');
+const url = ref('')
+const encodedUrl = ref('')
+const decodedUrl = ref('')
 
 // URL编码
 const encodeUrl = () => {
   if (!url.value) {
-    alert('请输入URL');
-    return;
+    alert('请输入URL')
+    return
   }
   try {
-    encodedUrl.value = encodeURIComponent(url.value);
+    encodedUrl.value = encodeURIComponent(url.value)
   } catch (error) {
-    alert('URL编码失败: ' + (error as Error).message);
+    alert('URL编码失败: ' + (error as Error).message)
   }
-};
+}
 
 // URL解码
 const decodeUrl = () => {
   if (!url.value) {
-    alert('请输入URL');
-    return;
+    alert('请输入URL')
+    return
   }
   try {
-    decodedUrl.value = decodeURIComponent(url.value);
+    decodedUrl.value = decodeURIComponent(url.value)
   } catch (error) {
-    alert('URL解码失败: ' + (error as Error).message);
+    alert('URL解码失败: ' + (error as Error).message)
   }
-};
+}
 
 // 清空URL编解码输入和结果
 const clearUrl = () => {
-  url.value = '';
-  encodedUrl.value = '';
-  decodedUrl.value = '';
-};
+  url.value = ''
+  encodedUrl.value = ''
+  decodedUrl.value = ''
+}
 
 // 处理图片上传
 const handleImageUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement;
+  const target = event.target as HTMLInputElement
   if (target.files && target.files[0]) {
-    imageFile.value = target.files[0];
-    imageToBase64(target.files[0]);
+    imageFile.value = target.files[0]
+    imageToBase64(target.files[0])
   }
-};
+}
 
 // 图片转Base64
 const imageToBase64 = (file: File) => {
-  const reader = new FileReader();
+  const reader = new FileReader()
   reader.onload = (e) => {
     if (typeof e.target?.result === 'string') {
-      imageBase64.value = e.target.result;
-      imagePreviewUrl.value = e.target.result;
+      imageBase64.value = e.target.result
+      imagePreviewUrl.value = e.target.result
     }
-  };
-  reader.readAsDataURL(file);
-};
+  }
+  reader.readAsDataURL(file)
+}
 
 // Base64转图片并下载
 const base64ToImage = () => {
   if (!imageBase64.value) {
-    alert('请先上传图片或输入有效的Base64编码');
-    return;
+    alert('请先上传图片或输入有效的Base64编码')
+    return
   }
 
   try {
     // 创建下载链接
-    const link = document.createElement('a');
-    link.href = imageBase64.value;
-    link.download = 'image_from_base64.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    alert('图片下载成功');
+    const link = document.createElement('a')
+    link.href = imageBase64.value
+    link.download = 'image_from_base64.png'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    alert('图片下载成功')
   } catch (error) {
-    alert('图片下载失败: ' + (error as Error).message);
+    alert('图片下载失败: ' + (error as Error).message)
   }
-};
+}
 
 // 清空图片和Base64编码
 const clearImage = () => {
-  imageFile.value = null;
-  imageBase64.value = '';
-  imagePreviewUrl.value = '';
-};
+  imageFile.value = null
+  imageBase64.value = ''
+  imagePreviewUrl.value = ''
+}
 
 // 监听Base64编码变化，更新预览
 watchEffect(() => {
   if (imageBase64.value && !imagePreviewUrl.value) {
-    imagePreviewUrl.value = imageBase64.value;
+    imagePreviewUrl.value = imageBase64.value
   }
-});
-const parsedDiffData = ref<{
-  line: number;
-  left: string;
-  right: string;
-  changed: boolean;
-  charDiffs1: { position: number; length: number }[];
-  charDiffs2: { position: number; length: number }[];
-}[]>([]);
+})
+const parsedDiffData = ref<
+  {
+    line: number
+    left: string
+    right: string
+    changed: boolean
+    charDiffs1: { position: number; length: number }[]
+    charDiffs2: { position: number; length: number }[]
+  }[]
+>([])
 
 // 解析差异数据
 watchEffect(() => {
   if (textDiffResult.value) {
     try {
-      parsedDiffData.value = JSON.parse(textDiffResult.value);
+      parsedDiffData.value = JSON.parse(textDiffResult.value)
     } catch (e) {
-      parsedDiffData.value = [];
+      parsedDiffData.value = []
     }
   }
-});
+})
 
 // 检查字符是否有变化
 const isCharChanged = (charDiffs: { position: number; length: number }[], index: number) => {
-  return charDiffs.some(diff => index >= diff.position && index < diff.position + diff.length);
-};
+  return charDiffs.some((diff) => index >= diff.position && index < diff.position + diff.length)
+}
 
 watchEffect(() => {
-  jsonObj.value = '';
+  jsonObj.value = ''
   if (str.value) {
-    let jsonData = decompressFromEncodedURIComponent(str.value);
-    jsonObj.value = JSON.stringify(JSON.parse(jsonData), null, 4);
+    let jsonData = decompressFromEncodedURIComponent(str.value)
+    jsonObj.value = JSON.stringify(JSON.parse(jsonData), null, 4)
   }
-});
+})
 
 watchEffect(() => {
-  lzStr.value = '';
+  lzStr.value = ''
   if (jsonStr.value) {
-    let jsonData = compressToEncodedURIComponent(JSON.stringify(JSON.parse(jsonStr.value)));
-    lzStr.value = jsonData;
+    let jsonData = compressToEncodedURIComponent(JSON.stringify(JSON.parse(jsonStr.value)))
+    lzStr.value = jsonData
   }
-});
+})
 
 const compareText = () => {
   try {
     const left = textCompareLeft.value
     const right = textCompareRight.value
-    
+
     // 文本行拆分并过滤空白行
-    const lines1 = left.split('\n').filter(line => line.trim() !== '')
-    const lines2 = right.split('\n').filter(line => line.trim() !== '')
-    
+    const lines1 = left.split('\n').filter((line) => line.trim() !== '')
+    const lines2 = right.split('\n').filter((line) => line.trim() !== '')
+
     // 计算行差异
     const diffData = []
     const maxLen = Math.max(lines1.length, lines2.length)
-    
+
     for (let i = 0; i < maxLen; i++) {
       const line1 = lines1[i] || ''
       const line2 = lines2[i] || ''
-      
+
       // 检查行是否有变化
       const changed = line1 !== line2
-      
+
       // 计算字符级差异
       let charDiffs1 = []
       let charDiffs2 = []
-      
+
       if (changed) {
         // 简单的字符差异检测
         const maxCharLen = Math.max(line1.length, line2.length)
         for (let j = 0; j < maxCharLen; j++) {
           const char1 = line1[j] || ''
           const char2 = line2[j] || ''
-          
+
           if (char1 !== char2) {
             charDiffs1.push({ position: j, length: 1 })
             charDiffs2.push({ position: j, length: 1 })
           }
         }
       }
-      
+
       diffData.push({
         line: i + 1,
         left: line1,
@@ -219,7 +219,7 @@ const compareText = () => {
         charDiffs2
       })
     }
-    
+
     textDiffResult.value = JSON.stringify(diffData, null, 2)
   } catch (e: any) {
     textDiffResult.value = `错误: ${e.message}`
@@ -232,76 +232,70 @@ const compareText = () => {
     <Sidebar />
     <div class="container">
       <div id="lz-decode" class="section">
-      <h2 class="section-title">LZ-String 解码</h2>
-      <div class="input-group">
-        <n-input 
-          v-model:value="str" 
-          type="textarea" 
-          placeholder="输入LZ-String编码" 
-          :rows="5"
-          class="input-field"
-        />
+        <h2 class="section-title">LZ-String 解码</h2>
+        <div class="input-group">
+          <n-input
+            v-model:value="str"
+            type="textarea"
+            placeholder="输入LZ-String编码"
+            :rows="5"
+            class="input-field"
+          />
+        </div>
+        <div class="output-group">
+          <d-code-editor
+            v-model="jsonObj"
+            :options="{ language: 'json', readOnly: true, automaticLayout: true }"
+            class="code-editor"
+            ref="codeEditorRef"
+            style="width: 100%"
+          />
+        </div>
       </div>
-      <div class="output-group">
-        <d-code-editor 
-          v-model="jsonObj" 
-          :options="{ language: 'json', readOnly: true, automaticLayout: true }" 
-           
-          class="code-editor"
-          ref="codeEditorRef"
-          style="width: 100%"
-        />
-      </div>
-    </div>
-    
-    <div id="lz-encode" class="section">
-      <h2 class="section-title">LZ-String 编码</h2>
-      <div class="input-group">
-        <n-input 
-          v-model:value="jsonStr" 
-          type="textarea" 
-          placeholder="输入JSON字符串" 
-          :rows="5"
-          class="input-field"
-        />
-      </div>
-      <div class="output-group">
-        <n-input 
-          v-model:value="lzStr" 
-          type="textarea" 
-          readonly
-          class="result-field"
-        />
-      </div>
-    </div>
 
-    <!-- 文本对比 -->
-    <div id="text-compare" class="section">
-      <h2 class="section-title">文本对比</h2>
-      <div class="compare-container">
-        <div class="compare-column">
-          <h3>左侧文本</h3>
+      <div id="lz-encode" class="section">
+        <h2 class="section-title">LZ-String 编码</h2>
+        <div class="input-group">
           <n-input
-            v-model:value="textCompareLeft"
+            v-model:value="jsonStr"
             type="textarea"
-            :rows="10"
-            class="compare-input"
-            placeholder="请输入左侧文本..."
+            placeholder="输入JSON字符串"
+            :rows="5"
+            class="input-field"
           />
         </div>
-        <div class="compare-column">
-          <h3>右侧文本</h3>
-          <n-input
-            v-model:value="textCompareRight"
-            type="textarea"
-            :rows="10"
-            class="compare-input"
-            placeholder="请输入右侧文本..."
-          />
+        <div class="output-group">
+          <n-input v-model:value="lzStr" type="textarea" readonly class="result-field" />
         </div>
       </div>
-      <n-button type="primary" @click="compareText" class="compare-button">开始对比</n-button>
-      <div class="diff-result">
+
+      <!-- 文本对比 -->
+      <div id="text-compare" class="section">
+        <h2 class="section-title">文本对比</h2>
+        <div class="compare-container">
+          <div class="compare-column">
+            <h3>左侧文本</h3>
+            <n-input
+              v-model:value="textCompareLeft"
+              type="textarea"
+              :rows="10"
+              class="compare-input"
+              placeholder="请输入左侧文本..."
+            />
+          </div>
+          <div class="compare-column">
+            <h3>右侧文本</h3>
+            <n-input
+              v-model:value="textCompareRight"
+              type="textarea"
+              :rows="10"
+              class="compare-input"
+              placeholder="请输入右侧文本..."
+            />
+          </div>
+        </div>
+        <n-button type="primary" @click="compareText" class="compare-button">开始对比</n-button>
+        <div class="diff-result">
           <h3>差异结果</h3>
           <div class="diff-viewer">
             <div class="diff-header">
@@ -315,125 +309,123 @@ const compareText = () => {
                 </div>
               </div>
               <div class="diff-left">
-                <div v-for="(line, index) in parsedDiffData" :key="index" :class="['diff-line', line.changed ? 'diff-changed' : '']">
-                  <span v-for="(char, charIndex) in line.left" :key="charIndex" :class="isCharChanged(line.charDiffs1, charIndex) ? 'diff-char-changed' : ''">
+                <div
+                  v-for="(line, index) in parsedDiffData"
+                  :key="index"
+                  :class="['diff-line', line.changed ? 'diff-changed' : '']"
+                >
+                  <span
+                    v-for="(char, charIndex) in line.left"
+                    :key="charIndex"
+                    :class="isCharChanged(line.charDiffs1, charIndex) ? 'diff-char-changed' : ''"
+                  >
                     {{ char }}
                   </span>
                 </div>
               </div>
               <div class="diff-separator"></div>
               <div class="diff-right">
-                <div v-for="(line, index) in parsedDiffData" :key="index" :class="['diff-line', line.changed ? 'diff-changed' : '']">
-                  <span v-for="(char, charIndex) in line.right" :key="charIndex" :class="isCharChanged(line.charDiffs2, charIndex) ? 'diff-char-changed' : ''">
+                <div
+                  v-for="(line, index) in parsedDiffData"
+                  :key="index"
+                  :class="['diff-line', line.changed ? 'diff-changed' : '']"
+                >
+                  <span
+                    v-for="(char, charIndex) in line.right"
+                    :key="charIndex"
+                    :class="isCharChanged(line.charDiffs2, charIndex) ? 'diff-char-changed' : ''"
+                  >
                     {{ char }}
                   </span>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
-    </div>
+      </div>
 
-    <!-- 图片Base64互转 -->
-    <div id="image-base64" class="section">
-      <h2 class="section-title">图片Base64互转</h2>
-      <div class="image-converter-container">
-        <div class="image-input-section">
-          <h3>上传图片</h3>
-          <input
-            type="file"
-            accept="image/*"
-            @change="handleImageUpload"
-            class="file-input"
-          />
-          <div class="button-group">
-            <button @click="base64ToImage" class="convert-button">
-               Base64转图片下载
-             </button>
-             <button @click="clearImage" class="clear-button">
-               清空
-             </button>
+      <!-- 图片Base64互转 -->
+      <div id="image-base64" class="section">
+        <h2 class="section-title">图片Base64互转</h2>
+        <div class="image-converter-container">
+          <div class="image-input-section">
+            <h3>上传图片</h3>
+            <input type="file" accept="image/*" @change="handleImageUpload" class="file-input" />
+            <div class="button-group">
+              <button @click="base64ToImage" class="convert-button">Base64转图片下载</button>
+              <button @click="clearImage" class="clear-button">清空</button>
+            </div>
+          </div>
+          <div class="image-preview-section">
+            <h3>图片预览</h3>
+            <div class="image-preview-container">
+              <img
+                v-if="imagePreviewUrl"
+                :src="imagePreviewUrl"
+                alt="预览图片"
+                class="preview-image"
+              />
+              <div v-else class="no-image-placeholder">请上传图片或输入Base64编码</div>
+            </div>
           </div>
         </div>
-        <div class="image-preview-section">
-          <h3>图片预览</h3>
-          <div class="image-preview-container">
-            <img
-              v-if="imagePreviewUrl"
-              :src="imagePreviewUrl"
-              alt="预览图片"
-              class="preview-image"
-            />
-            <div v-else class="no-image-placeholder">
-              请上传图片或输入Base64编码
+
+        <div class="base64-section">
+          <h3>Base64编码</h3>
+          <textarea
+            v-model="imageBase64"
+            rows="6"
+            class="base64-input"
+            placeholder="图片的Base64编码会显示在这里..."
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- URL编解码 -->
+      <div id="url-encode-decode" class="section">
+        <h2 class="section-title">URL编解码</h2>
+        <div class="url-converter-container">
+          <div class="url-input-section">
+            <h3>输入URL</h3>
+            <textarea
+              v-model="url"
+              rows="3"
+              class="url-input"
+              placeholder="请输入要编码或解码的URL..."
+            ></textarea>
+            <div class="url-buttons">
+              <button @click="encodeUrl" class="encode-button">URL编码</button>
+              <button @click="decodeUrl" class="decode-button">URL解码</button>
+              <button @click="clearUrl" class="clear-url-button">清空</button>
+            </div>
+          </div>
+
+          <div class="url-results">
+            <div class="encoded-url-section">
+              <h3>编码结果</h3>
+              <textarea
+                v-model="encodedUrl"
+                rows="3"
+                class="url-result-input"
+                readonly
+                placeholder="URL编码结果会显示在这里..."
+              ></textarea>
+            </div>
+
+            <div class="decoded-url-section">
+              <h3>解码结果</h3>
+              <textarea
+                v-model="decodedUrl"
+                rows="3"
+                class="url-result-input"
+                readonly
+                placeholder="URL解码结果会显示在这里..."
+              ></textarea>
             </div>
           </div>
         </div>
       </div>
-
-      <div class="base64-section">
-        <h3>Base64编码</h3>
-        <textarea
-           v-model="imageBase64"
-           rows="6"
-           class="base64-input"
-           placeholder="图片的Base64编码会显示在这里..."
-         ></textarea>
-      </div>
     </div>
-
-    <!-- URL编解码 -->
-    <div id="url-encode-decode" class="section">
-      <h2 class="section-title">URL编解码</h2>
-      <div class="url-converter-container">
-        <div class="url-input-section">
-          <h3>输入URL</h3>
-          <textarea
-            v-model="url"
-            rows="3"
-            class="url-input"
-            placeholder="请输入要编码或解码的URL..."
-          ></textarea>
-          <div class="url-buttons">
-            <button @click="encodeUrl" class="encode-button">
-              URL编码
-            </button>
-            <button @click="decodeUrl" class="decode-button">
-              URL解码
-            </button>
-            <button @click="clearUrl" class="clear-url-button">
-              清空
-            </button>
-          </div>
-        </div>
-
-        <div class="url-results">
-          <div class="encoded-url-section">
-            <h3>编码结果</h3>
-            <textarea
-              v-model="encodedUrl"
-              rows="3"
-              class="url-result-input"
-              readonly
-              placeholder="URL编码结果会显示在这里..."
-            ></textarea>
-          </div>
-
-          <div class="decoded-url-section">
-            <h3>解码结果</h3>
-            <textarea
-              v-model="decodedUrl"
-              rows="3"
-              class="url-result-input"
-              readonly
-              placeholder="URL解码结果会显示在这里..."
-            ></textarea>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
   </div>
 </template>
 
@@ -466,7 +458,7 @@ const compareText = () => {
   .container {
     padding: 1rem;
   }
-  
+
   .compare-container {
     flex-direction: column;
   }
@@ -484,11 +476,13 @@ const compareText = () => {
   color: #333;
 }
 
-.input-group, .output-group {
+.input-group,
+.output-group {
   margin-bottom: 1rem;
 }
 
-.input-field, .result-field {
+.input-field,
+.result-field {
   width: 100%;
   box-sizing: border-box;
 }
@@ -687,7 +681,9 @@ const compareText = () => {
   gap: 1rem;
 }
 
-.encode-button, .decode-button, .clear-url-button {
+.encode-button,
+.decode-button,
+.clear-url-button {
   flex: 1;
 }
 
@@ -697,7 +693,8 @@ const compareText = () => {
   gap: 1rem;
 }
 
-.encoded-url-section, .decoded-url-section {
+.encoded-url-section,
+.decoded-url-section {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
