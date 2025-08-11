@@ -7,6 +7,7 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import { DevUiResolver } from 'unplugin-vue-components/resolvers'
+import monacoEditorPlugin from 'vite-plugin-monaco-editor'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -23,6 +24,9 @@ export default defineConfig({
     }),
     Components({
       resolvers: [NaiveUiResolver(), DevUiResolver()]
+    }),
+    monacoEditorPlugin({
+      languageWorkers: ['editorWorkerService', 'json']
     })
   ],
   define: {
